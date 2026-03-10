@@ -1,0 +1,15 @@
+body {
+    background-color: #f5f6fa;
+}
+
+.nav-link {
+    color: #333;
+}
+
+.nav-link:hover {
+    background-color: #e9ecef;
+}
+
+.card {
+    border-radius: 10px;
+}
