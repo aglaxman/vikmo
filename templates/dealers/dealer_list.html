@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+<!-- Page Header -->
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+<h2>Dealers</h2>
+
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#dealerModal">
++ Add Dealer
+</button>
+
+</div>
+
+
+<!-- Search -->
+
+<div class="mb-3">
+
+<input type="text" class="form-control" placeholder="Search dealer by name">
+
+</div>
+
+
+<!-- Dealers Table -->
+
+<div class="card">
+
+<div class="card-body">
+
+<table class="table table-hover">
+
+<thead class="table-light">
+
+<tr>
+<th>Name</th>
+<th>Phone</th>
+<th>Email</th>
+<th>City</th>
+<th>Actions</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+<td>ABC Motors</td>
+<td>9876543210</td>
+<td>abc@gmail.com</td>
+<td>Bangalore</td>
+<td>
+<button class="btn btn-sm btn-outline-primary">Edit</button>
+<button class="btn btn-sm btn-outline-danger">Delete</button>
+</td>
+</tr>
+
+<tr>
+<td>XYZ Auto</td>
+<td>9988776655</td>
+<td>xyz@gmail.com</td>
+<td>Mysore</td>
+<td>
+<button class="btn btn-sm btn-outline-primary">Edit</button>
+<button class="btn btn-sm btn-outline-danger">Delete</button>
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- Add Dealer Modal -->
+
+<div class="modal fade" id="dealerModal">
+
+<div class="modal-dialog">
+
+<div class="modal-content">
+
+<div class="modal-header">
+
+<h5 class="modal-title">Add Dealer</h5>
+
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+</div>
+
+<div class="modal-body">
+
+<form>
+
+<div class="mb-3">
+<label class="form-label">Dealer Name</label>
+<input type="text" class="form-control">
+</div>
+
+<div class="mb-3">
+<label class="form-label">Phone</label>
+<input type="text" class="form-control">
+</div>
+
+<div class="mb-3">
+<label class="form-label">Email</label>
+<input type="email" class="form-control">
+</div>
+
+<div class="mb-3">
+<label class="form-label">City</label>
+<input type="text" class="form-control">
+</div>
+
+<button class="btn btn-success w-100">
+Save Dealer
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}
