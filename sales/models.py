@@ -24,7 +24,10 @@ class Inventory(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.product.name} - {self.quantity}"
+        return f"{self.product.name}"
+    
+    class Meta:
+        verbose_name_plural = "Inventory"
     
 
 class Dealer(models.Model):
@@ -82,11 +85,6 @@ class Order(models.Model):
         super().save(*args, **kwargs)
 
 
-
-   
-    
-    
-
 class OrderItem(models.Model):
 
     
@@ -100,6 +98,10 @@ class OrderItem(models.Model):
         return f"{self.product.name} x {self.quantity}"
     
     def save(self, *args, **kwargs):
+
+        # take price from product automatically
+        if not self.unit_price:
+            self.unit_price = self.product.price
 
         # calculate line total
         self.line_total = self.quantity * self.unit_price
