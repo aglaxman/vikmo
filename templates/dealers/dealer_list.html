@@ -36,6 +36,7 @@
 
 <thead class="table-light">
 
+
 <tr>
 <th>Name</th>
 <th>Phone</th>
@@ -47,28 +48,19 @@
 </thead>
 
 <tbody>
-
+{% for dealer in dealers %}
 <tr>
-<td>ABC Motors</td>
-<td>9876543210</td>
-<td>abc@gmail.com</td>
-<td>Bangalore</td>
+<td>{{dealer}}</td>
+<td>{{dealer.phone}}</td>
+<td>{{dealer.email}}</td>
+<td>{{dealer.address}}</td>
 <td>
 <button class="btn btn-sm btn-outline-primary">Edit</button>
 <button class="btn btn-sm btn-outline-danger">Delete</button>
 </td>
 </tr>
+{% endfor %}
 
-<tr>
-<td>XYZ Auto</td>
-<td>9988776655</td>
-<td>xyz@gmail.com</td>
-<td>Mysore</td>
-<td>
-<button class="btn btn-sm btn-outline-primary">Edit</button>
-<button class="btn btn-sm btn-outline-danger">Delete</button>
-</td>
-</tr>
 
 </tbody>
 

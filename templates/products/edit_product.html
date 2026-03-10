@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="modal-body">
+
+<form action="{% url 'edit_product' product.sku %}" method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+    <label class="form-label" for="name">Product Name</label>
+    <input type="text" class="form-control" name="name" id="name" value="{{ product.name}}" required>
+    </div>
+
+    <div class="mb-3">
+    <label class="form-label" for="sku">SKU</label>
+    <input type="text" class="form-control" name="sku" id="sku" value="{{ product.sku}}" required>
+    </div>
+
+    <div class="mb-3">
+    <label class="form-label">Price</label>
+    <input type="number" class="form-control" name="price" id="price" value="{{ product.price}}" required>
+    </div>
+
+    <div class="mb-3">
+    <label class="form-label">Description</label>
+    <input type="text" class="form-control" name="description" id="description" value="{{ product.description}}" required>
+    </div>
+
+
+    <button class="btn btn-success w-100" type="submit">
+        Save Changes
+    </button>
+
+</form>
+
+</div>
+<!-- 
+</div>
+
+</div>
+
+</div> -->
+
+{% endblock %}
