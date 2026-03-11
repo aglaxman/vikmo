@@ -17,7 +17,6 @@ class Product(models.Model):
     
 class Inventory(models.Model):
 
-    
     product = models.OneToOneField(Product , on_delete=models.CASCADE,related_name="inventory")
     quantity = models.PositiveIntegerField(default=0)
     updated_at = models.DateTimeField(auto_now=True)
@@ -31,10 +30,10 @@ class Inventory(models.Model):
 
 class Dealer(models.Model):
     
-    
+
     name = models.CharField(max_length=150, null=False)
-    email = models.EmailField()
-    phone = models.CharField(max_length=15, null = False)
+    email = models.EmailField(unique=True)
+    phone = models.CharField(max_length=15, null = False , unique=True)
     address = models.TextField(max_length=500, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

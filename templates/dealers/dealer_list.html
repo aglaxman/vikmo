@@ -10,23 +10,30 @@
 
 <h2>Dealers</h2>
 
-<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#dealerModal">
-+ Add Dealer
-</button>
+
+<a href="{% url 'add_dealer' %}">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#dealerModal">
+    + Add Dealer
+    </button>
+</a>
+
 
 </div>
 
 
 <!-- Search -->
 
-<div class="mb-3">
+<form method="get">
+    <div class="mb-3">
+    <input type="text" class="form-control" placeholder="Search dealer by name" name="q" value="{{ request.GET.q }}">
+    </div>
+</form>
 
-<input type="text" class="form-control" placeholder="Search dealer by name">
-
-</div>
 
 
 <!-- Dealers Table -->
+
+{% if dealers|length > 0 %}
 
 <div class="card">
 
@@ -55,8 +62,17 @@
 <td>{{dealer.email}}</td>
 <td>{{dealer.address}}</td>
 <td>
-<button class="btn btn-sm btn-outline-primary">Edit</button>
-<button class="btn btn-sm btn-outline-danger">Delete</button>
+<a href="{% url 'edit_dealer' dealer.pk %}">
+    <button class="btn btn-sm btn-outline-primary">Edit</button>
+
+</a>
+<a href="{% url 'delete_dealer' dealer.pk %}"
+
+   onclick="return confirm('Are you sure you want to delete this product?')">
+    <button class="btn btn-sm btn-outline-danger">Delete</button>
+</a>
+
+
 </td>
 </tr>
 {% endfor %}
@@ -71,6 +87,12 @@
 </div>
 
 </div>
+
+{% else %}
+
+<h2>No Dealers found </h2>
+
+{% endif %}
 
 
 <!-- Add Dealer Modal -->

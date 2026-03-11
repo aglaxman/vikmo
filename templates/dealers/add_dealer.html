@@ -24,35 +24,30 @@
 </div>
 {% endif %}
 
-<form action="{% url 'add_product' %}" method="post">
+<form action="{% url 'add_dealer' %}" method="POST">
     {% csrf_token %}
     <div class="mb-3">
-    <label class="form-label" for="name">Product Name</label>
+    <label class="form-label" for="name">Dealer Name</label>
     <input type="text" class="form-control" name="name" id="name" required>
     </div>
 
     <div class="mb-3">
-    <label class="form-label" for="sku">SKU</label>
-    <input type="text" class="form-control" name="sku" id="sku" required>
+    <label class="form-label" for="sku">Email</label>
+    <input type="email" class="form-control" name="email" id="email" required>
     </div>
 
     <div class="mb-3">
-    <label class="form-label">Price</label>
-    <input type="number" class="form-control" name="price" id="price" required>
+    <label class="form-label">phone</label>
+    <input type="tel" class="form-control" name="phone" id="phone" required>
     </div>
 
     <div class="mb-3">
-    <label class="form-label">Description</label>
-    <input type="text" class="form-control" name="description" id="description" required>
-    </div>
-
-    <div class="mb-3">
-    <label class="form-label">Stock</label>
-    <input type="text" class="form-control" name="stock" id="stock" required>
+    <label class="form-label">Address</label>
+    <input type="text" class="form-control" name="address" id="address" required>
     </div>
 
     <button class="btn btn-success w-100" type="submit">
-    Add Product
+    Add Dealer
     </button>
 
 </form>

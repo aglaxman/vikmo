@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
 
+
+<div class="modal-body">
+{% if error %}
+<div class="alert alert-danger">
+    {{ error }}
+</div>
+{% endif %}
+
 <div class="modal-body">
 
 <form action="{% url 'edit_product' product.sku %}" method="post">
