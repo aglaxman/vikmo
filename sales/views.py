@@ -4,14 +4,16 @@ from django.db.models import Q
 
 from .models import *
 
+
+
+
 def dashboard(req):
     return render(req,'dashboard.html')
 
 
 
-
+# Product CRUD Operations
 # -------------------------------------------------------------------------------
-
 
 def product_list(req):
     query = req.GET.get('q')
@@ -80,7 +82,7 @@ def edit_product(req , sku):
 
         product.save()
 
-        return redirect(product_list)
+        return redirect('product_list')
     context = {
         'product' : product,
     }
@@ -90,12 +92,13 @@ def edit_product(req , sku):
 def delete_product(req, sku):
     product = get_object_or_404(Product , sku=sku)
     product.delete()
-    return redirect(product_list)
+    return redirect('product_list')
 
 
-# -------------------------------------------------------------------------------------------
+# ---------------------------------xxxxxxxxxxxxxxxxxxxxx--------------------------------------------
 
 
+# Dealer CRUD Operations
 # ---------------------------------------------------------------------------------------------
 
 def dealer_list(req):
@@ -173,15 +176,30 @@ def edit_dealer(req , pk ):
 def delete_dealer(req, pk):
     dealer = get_object_or_404(Dealer , pk = pk)
     dealer.delete()
-    return redirect(dealer_list)
+    return redirect('dealer_list')
+
+
+#-----------------------------------xxxxxxxxxxxxxxxxxxxx--------------------------
     
 
 def inventory_list(req):
+
+    query  = req.GET.get('q')
     inventories = Inventory.objects.all()
+
+    if query:
+        inventories = Inventory.objects.filter(
+           Q(product__name__icontains = query) |
+           Q(product__sku__icontains = query)
+        )
     context = {
         'inventories' : inventories,  
     }
     return render(req,'inventory/inventory_list.html', context)
+
+
+
+#----------------------xxxxxxxxxxxxxxxxxxxxxx------------------------------
 
 
 def order_list(req):
@@ -190,3 +208,24 @@ def order_list(req):
         'orders' : orders,  
     }
     return render(req, 'order/order_list.html', context)
+
+
+def genreate_order_number(req):
+    order = Order.objects.create(
+        status = 'draft'
+    )
+    return redirect('create_order' , order.pk)
+
+def create_order(req, pk):
+    
+    order = get_object_or_404(Order, pk = pk)
+    dealers = Dealer.objects.all()
+    products = Product.objects.all()
+
+    context = {
+        'order': order,
+        'dealers': dealers,
+        'products' : products,
+
+    }
+    return render(req, 'order/create_order.html', context)

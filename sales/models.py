@@ -51,7 +51,7 @@ class Order(models.Model):
             ('delivered','Delivered')
         ]
   
-    dealer = models.ForeignKey(Dealer , on_delete=models.CASCADE)
+    dealer = models.ForeignKey(Dealer , on_delete=models.CASCADE , null=True ,blank=True)
     status = models.CharField(max_length=20,choices= status_choices, default='draft')
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -88,12 +88,12 @@ class OrderItem(models.Model):
     
     order = models.ForeignKey(Order, on_delete=models.CASCADE , related_name='items' )
     product = models.ForeignKey(Product , on_delete=models.CASCADE)
-    quantity = models.IntegerField(null=False)
+    quantity = models.PositiveIntegerField(null=False)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     line_total = models.DecimalField(max_digits=12, decimal_places=2)
 
     def __str__(self):
-        return f"{self.product.name} x {self.quantity}"
+        return f"{self.product.name}"
     
     def save(self, *args, **kwargs):
 

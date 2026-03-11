@@ -23,5 +23,11 @@ urlpatterns = [
 
 
     path("inventory/", views.inventory_list , name='inventory_list' ),
-    path('order/', views.order_list , name='order_list')
+
+
+
+
+    path('order/', views.order_list , name='order_list'),
+    path('order/genrate_order_number/', views.genreate_order_number , name='genreate_order_number'),
+    path('order/create_order/<int:pk>' , views.create_order ,name= 'create_order'),
 ]

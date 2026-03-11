@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h3><span class="text-secondary">Order No : </span>{{ order.order_number }}</h3>
+
+<form method="POST">
+{% csrf_token %}
+
+<!-- Dealer Section -->
+
+<div class="card mb-4">
+
+<div class="card-body">
+
+<div class="row">
+
+<div class="col-md-6">
+
+<label class="form-label">Dealer</label>
+
+<select name="dealer" class="form-control searchable">
+
+{% for dealer in dealers %}
+<option value="{{ dealer.id }}"
+{% if order.dealer.id == dealer.id %}selected{% endif %}
+>
+{{ dealer.name }} - {{ dealer.phone }}
+</option>
+{% endfor %}
+
+</select>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Add Item -->
+
+<div class="card mb-4">
+
+<div class="card-header">
+Add Item
+</div>
+
+<div class="card-body">
+
+<div class="row">
+
+<div class="col-md-5">
+
+<label>Product</label>
+
+<select id="product" class="form-control searchable">
+
+{% for product in products %}
+<option value="{{ product.id }}" data-price="{{ product.price }}">
+{{ product.name }} - {{ product.sku }}
+</option>
+{% endfor %}
+
+</select>
+
+</div>
+
+<div class="col-md-2">
+
+<label>Quantity</label>
+
+<input type="number" id="quantity" class="form-control" value="1">
+
+</div>
+
+<div class="col-md-2">
+
+<label>Unit Price</label>
+
+<input type="text" id="price" class="form-control" readonly value="{{ product.price }}">
+
+</div>
+
+<div class="col-md-2">
+
+<label>Line Total</label>
+
+<input type="text" id="line_total" class="form-control" readonly>
+
+</div>
+
+<div class="col-md-1 d-flex align-items-end">
+
+<button type="button" class="btn btn-success w-100" onclick="addItem()">+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Order Items Table -->
+
+<div class="card mb-4">
+
+<div class="card-header">
+Order Items
+</div>
+
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>Product</th>
+<th>Qty</th>
+<th>Price</th>
+<th>Total</th>
+<th></th>
+</tr>
+</thead>
+
+<tbody id="items_table">
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- Bottom Section -->
+
+<div class="d-flex justify-content-between align-items-center">
+
+<h4>Total: ₹ <span id="order_total">0</span></h4>
+
+<div>
+
+<button type="submit" name="save" class="btn btn-secondary">
+Save Draft
+</button>
+
+<button type="submit" name="place_order" class="btn btn-primary">
+Place Order
+</button>
+
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+<!-- Scripts -->
+
+<script>
+
+let total = 0
+
+document.getElementById("product").addEventListener("change", function(){
+
+let price = this.options[this.selectedIndex].dataset.price
+
+document.getElementById("price").value = price
+
+calculate()
+
+})
+
+document.getElementById("quantity").addEventListener("input", calculate)
+
+function calculate(){
+
+let price = parseFloat(document.getElementById("price").value) || 0
+let qty = parseInt(document.getElementById("quantity").value) || 0
+
+document.getElementById("line_total").value = price * qty
+
+}
+
+function addItem(){
+
+let product = document.getElementById("product")
+let productText = product.options[product.selectedIndex].text
+
+let qty = document.getElementById("quantity").value
+let price = document.getElementById("price").value
+let lineTotal = document.getElementById("line_total").value
+
+let row = `
+<tr>
+<td>${productText}</td>
+<td>${qty}</td>
+<td>${price}</td>
+<td>${lineTotal}</td>
+<td><button class="btn btn-danger btn-sm" onclick="removeRow(this)">x</button></td>
+</tr>
+`
+
+document.getElementById("items_table").insertAdjacentHTML("beforeend", row)
+
+total += parseFloat(lineTotal)
+
+document.getElementById("order_total").innerText = total
+
+}
+
+function removeRow(btn){
+
+let row = btn.parentNode.parentNode
+let value = row.children[3].innerText
+
+total -= parseFloat(value)
+
+document.getElementById("order_total").innerText = total
+
+row.remove()
+
+}
+
+</script>
+
+{% endblock %}

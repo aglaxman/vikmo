@@ -19,11 +19,17 @@
 
 <!-- Search Bar -->
 
-<div class="mb-3">
 
-<input type="text" class="form-control" placeholder="Search product">
+<form method="get">
 
-</div>
+    <div class="mb-3">
+    <input type="text" class="form-control" placeholder="Search product" name="q" value="{{ request.GET.q }}">
+    </div>
+
+</form>
+
+
+{% if inventories|length > 0 %}
 
 
 <!-- Inventory Table -->
@@ -75,6 +81,12 @@
 </div>
 
 </div>
+
+{% else %}
+
+<h2>No Product Found </h2>
+
+{% endif %}
 
 
 <!-- Add Stock Modal -->
