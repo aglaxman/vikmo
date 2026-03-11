@@ -4,7 +4,7 @@
 
 <div class="container mt-4">
 
-<h3><span class="text-secondary">Order No : </span>{{ order.order_number }}</h3>
+<h3><span class="text-secondary">Order No : </span>{{ order_number }}</h3>
 
 <form method="POST">
 {% csrf_token %}
@@ -191,6 +191,7 @@ document.getElementById("line_total").value = price * qty
 function addItem(){
 
 let product = document.getElementById("product")
+let productId = product.value
 let productText = product.options[product.selectedIndex].text
 
 let qty = document.getElementById("quantity").value
@@ -199,11 +200,27 @@ let lineTotal = document.getElementById("line_total").value
 
 let row = `
 <tr>
-<td>${productText}</td>
-<td>${qty}</td>
-<td>${price}</td>
+<td>
+${productText}
+<input type="hidden" name="product_id[]" value="${productId}">
+</td>
+
+<td>
+${qty}
+<input type="hidden" name="quantity[]" value="${qty}">
+</td>
+
+<td>
+${price}
+<input type="hidden" name="price[]" value="${price}">
+</td>
+
 <td>${lineTotal}</td>
-<td><button class="btn btn-danger btn-sm" onclick="removeRow(this)">x</button></td>
+
+<td>
+<button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">x</button>
+</td>
+
 </tr>
 `
 

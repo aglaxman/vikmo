@@ -10,7 +10,7 @@
 
 <h2>Orders</h2>
 
-<a href="{% url 'genreate_order_number' %}">
+<a href="{% url 'create_order' %}">
     <button class="btn btn-primary" data-bs-target="#orderModal">
     + Create Order
     </button>
@@ -28,6 +28,8 @@
 
 </div>
 
+
+{% if orders %}
 
 <!-- Orders Table -->
 
@@ -71,7 +73,12 @@
 <td>{{ order.updated_at| date:'M,d Y'}}</td>
 <td>
 <button class="btn btn-sm btn-outline-primary">View</button>
-<button class="btn btn-sm btn-outline-danger">Delete</button>
+
+<a href="{% url 'delete_order' order.pk %}"
+    onclick="return confirm('Are you sure you want to delete this product?')">
+    <button class="btn btn-sm btn-outline-danger">Delete</button>
+</a>
+
 </td>
 </tr>
 {% endfor %}
@@ -87,122 +94,11 @@
 
 </div>
 
+{% else %}
 
-<!-- Create Order Modal -->
-
-<div class="modal fade" id="orderModal">
-
-<div class="modal-dialog modal-lg">
-
-<div class="modal-content">
-
-<div class="modal-header">
-
-<h5 class="modal-title">Create Order</h5>
-
-<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-
-</div>
-
-<div class="modal-body">
-
-<form>
-
-<!-- Dealer -->
-
-<div class="mb-3">
-
-<label class="form-label">Dealer</label>
-
-<select class="form-control">
-<option>Select Dealer</option>
-<option>ABC Motors</option>
-<option>XYZ Auto</option>
-</select>
-
-</div>
+<h2>No Orders</h2>
+{% endif %}
 
 
-<!-- Order Items -->
-
-<h5 class="mt-4">Order Items</h5>
-
-<table class="table">
-
-<thead>
-
-<tr>
-<th>Product</th>
-<th>Qty</th>
-<th>Unit Price</th>
-<th>Total</th>
-<th></th>
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td>
-
-<select class="form-control">
-<option>Brake Pad</option>
-<option>Engine Oil</option>
-</select>
-
-</td>
-
-<td>
-<input type="number" class="form-control" value="1">
-</td>
-
-<td>
-<input type="text" class="form-control" value="500" readonly>
-</td>
-
-<td>
-<input type="text" class="form-control" value="500" readonly>
-</td>
-
-<td>
-<button class="btn btn-sm btn-danger">X</button>
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-
-<button type="button" class="btn btn-secondary mb-3">
-+ Add Product
-</button>
-
-
-<!-- Order Total -->
-
-<div class="text-end">
-
-<h5>Total Amount : ₹500</h5>
-
-</div>
-
-
-<button class="btn btn-success w-100 mt-3">
-Create Order
-</button>
-
-</form>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
 
 {% endblock %}

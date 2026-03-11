@@ -62,23 +62,28 @@ class Order(models.Model):
         return f"Order {self.order_number}"
 
 
+    @staticmethod
+    def generate_order_number():
+
+        today = timezone.now().strftime("%Y%m%d")
+
+        last_order = Order.objects.filter(
+            order_number__startswith=f"ORD-{today}"
+        ).order_by("order_number").last()
+
+        if last_order:
+            last_number = int(last_order.order_number.split("-")[-1])
+            new_number = last_number + 1
+        else:
+            new_number = 1
+
+        return f"ORD-{today}-{new_number:04d}"
+
+
     def save(self, *args, **kwargs):
 
         if not self.order_number:
-
-            today = timezone.now().strftime("%Y%m%d")
-
-            last_order = Order.objects.filter(
-                order_number__startswith=f"ORD-{today}"
-            ).order_by("order_number").last()
-
-            if last_order:
-                last_number = int(last_order.order_number.split("-")[-1])
-                new_number = last_number + 1
-            else:
-                new_number = 1
-
-            self.order_number = f"ORD-{today}-{new_number:04d}"
+            self.order_number = Order.generate_order_number()
 
         super().save(*args, **kwargs)
 

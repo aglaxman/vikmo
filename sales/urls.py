@@ -28,6 +28,6 @@ urlpatterns = [
 
 
     path('order/', views.order_list , name='order_list'),
-    path('order/genrate_order_number/', views.genreate_order_number , name='genreate_order_number'),
-    path('order/create_order/<int:pk>' , views.create_order ,name= 'create_order'),
+    path('order/create_order' , views.create_order ,name= 'create_order'),
+    path('order/delete_order/<int:pk>', views.delete_order ,name='delete_order'),
 ]

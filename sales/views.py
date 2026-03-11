@@ -210,22 +210,48 @@ def order_list(req):
     return render(req, 'order/order_list.html', context)
 
 
-def genreate_order_number(req):
-    order = Order.objects.create(
-        status = 'draft'
-    )
-    return redirect('create_order' , order.pk)
 
-def create_order(req, pk):
+
+def create_order(req):
     
-    order = get_object_or_404(Order, pk = pk)
+    order_number = Order.generate_order_number()
     dealers = Dealer.objects.all()
     products = Product.objects.all()
 
+    if req.method == "POST":
+
+        dealer_id = req.POST.get("dealer")
+
+        order = Order.objects.create(
+            order_number=order_number,
+            dealer_id=dealer_id,
+            status="draft"
+        )
+
+        product_ids = req.POST.getlist("product_id[]")
+        quantities = req.POST.getlist("quantity[]")
+        prices = req.POST.getlist("price[]")
+
+        for i in range(len(product_ids)):
+            OrderItem.objects.create(
+                order=order,
+                product_id=int(product_ids[i]),
+                quantity=int(quantities[i]),
+                unit_price=float(prices[i]),
+            )
+
+        return redirect("order_list")
     context = {
-        'order': order,
+        'order_number': order_number,
         'dealers': dealers,
         'products' : products,
 
     }
     return render(req, 'order/create_order.html', context)
+
+
+
+def delete_order(req, pk):
+    order = get_object_or_404(Order , pk = pk)
+    order.delete()
+    return redirect('order_list')
