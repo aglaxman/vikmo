@@ -2,7 +2,6 @@
 
 {% block content %}
 
-
 {% if messages %}
     {% for message in messages %}
         <div class="alert alert-danger">
@@ -13,7 +12,7 @@
 
 <div class="container mt-4">
 
-<h3><span class="text-secondary">Order No : </span>{{ order_number }}</h3>
+<h3><span class="text-secondary">Order No : </span>{{ order.order_number }}</h3>
 
 <form method="POST">
 {% csrf_token %}
@@ -32,13 +31,11 @@
 
 <select name="dealer" class="form-control searchable">
 
-{% for dealer in dealers %}
 <option value="{{ dealer.id }}"
 {% if order.dealer.id == dealer.id %}selected{% endif %}
 >
-{{ dealer.name }} - {{ dealer.phone }}
+{{ order.dealer.name }} - {{ order.dealer.phone }}
 </option>
-{% endfor %}
 
 </select>
 
@@ -138,6 +135,35 @@ Order Items
 
 <tbody id="items_table">
 
+{% for item in orderitems %}
+<tr>
+
+<td>
+{{ item.product.name }} - {{ item.product.sku }}
+<input type="hidden" name="product_id[]" value="{{ item.product.id }}">
+</td>
+
+<td>
+{{ item.quantity }}
+<input type="hidden" name="quantity[]" value="{{ item.quantity }}">
+</td>
+
+<td>
+{{ item.unit_price }}
+<input type="hidden" name="price[]" value="{{ item.unit_price }}">
+</td>
+
+<td>
+{{ item.line_total }}
+</td>
+
+<td>
+<button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">x</button>
+</td>
+
+</tr>
+{% endfor %}
+
 </tbody>
 
 </table>
@@ -175,6 +201,29 @@ Place Order
 <script>
 
 let total = 0
+
+function calculateExistingTotal(){
+
+let rows = document.querySelectorAll("#items_table tr")
+
+total = 0
+
+rows.forEach(function(row){
+
+let value = parseFloat(row.children[3].innerText) || 0
+total += value
+
+})
+
+document.getElementById("order_total").innerText = total
+
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+calculateExistingTotal()
+calculate()
+})
+
 
 document.getElementById("product").addEventListener("change", function(){
 
@@ -229,7 +278,6 @@ ${price}
 <td>
 <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">x</button>
 </td>
-
 </tr>
 `
 
@@ -239,14 +287,17 @@ total += parseFloat(lineTotal)
 
 document.getElementById("order_total").innerText = total
 
+document.getElementById("quantity").value = 1
+document.getElementById("line_total").value = ""
+
 }
 
 function removeRow(btn){
 
 let row = btn.parentNode.parentNode
-let value = row.children[3].innerText
+let value = parseFloat(row.children[3].innerText) || 0
 
-total -= parseFloat(value)
+total -= value
 
 document.getElementById("order_total").innerText = total
 

@@ -1,9 +1,54 @@
 from django.shortcuts import render,redirect, get_object_or_404
 from django.http import HttpResponse 
 from django.db.models import Q
+from django.contrib import messages
 
 from .models import *
 
+
+
+
+def confirm_order(order):
+
+    # 1️⃣ Validate stock first
+    for item in order.items.all():
+
+        inventory = item.product.inventory
+
+        if item.quantity > inventory.quantity:
+            raise ValueError(
+                f"Not enough stock for {item.product.name}. Available: {inventory.quantity}"
+            )
+
+    # 2️⃣ Reduce stock only after validation passes
+    for item in order.items.all():
+
+        inventory = item.product.inventory
+        inventory.quantity -= item.quantity
+        inventory.save()
+
+    # 3️⃣ Update order status
+    order.status = "confirmed"
+    order.save()
+
+def validate_stock(product_ids, quantities):
+
+    errors = []
+
+    for i in range(len(product_ids)):
+
+        product = Product.objects.get(id=product_ids[i])
+        inventory = product.inventory
+        qty = int(quantities[i])
+
+        if qty > inventory.quantity:
+
+            errors.append(
+                f"{product.name} → Available stock: {inventory.quantity}, Requested: {qty}"
+            )
+    if errors:
+        raise ValueError(errors)
+        
 
 
 
@@ -203,7 +248,16 @@ def inventory_list(req):
 
 
 def order_list(req):
+
+    query = req.GET.get('q')
     orders = Order.objects.all()
+
+    if query:
+
+        orders = Order.objects.filter(
+            Q(order_number__icontains = query) |
+            Q(dealer__name__icontains = query)
+        )
     context = {
         'orders' : orders,  
     }
@@ -213,7 +267,7 @@ def order_list(req):
 
 
 def create_order(req):
-    
+
     order_number = Order.generate_order_number()
     dealers = Dealer.objects.all()
     products = Product.objects.all()
@@ -222,15 +276,26 @@ def create_order(req):
 
         dealer_id = req.POST.get("dealer")
 
+        product_ids = req.POST.getlist("product_id[]")
+        quantities = req.POST.getlist("quantity[]")
+        prices = req.POST.getlist("price[]")
+
+        # call validation
+        if "place_order" in req.POST:
+            try:
+                validate_stock(product_ids, quantities)
+            except ValueError as e:
+
+                for error in e.args[0]:
+                    messages.error(req, error)
+
+                return redirect("create_order")
+
         order = Order.objects.create(
             order_number=order_number,
             dealer_id=dealer_id,
             status="draft"
         )
-
-        product_ids = req.POST.getlist("product_id[]")
-        quantities = req.POST.getlist("quantity[]")
-        prices = req.POST.getlist("price[]")
 
         for i in range(len(product_ids)):
             OrderItem.objects.create(
@@ -240,16 +305,114 @@ def create_order(req):
                 unit_price=float(prices[i]),
             )
 
+        if "place_order" in req.POST:
+            confirm_order(order)
+
         return redirect("order_list")
+
     context = {
-        'order_number': order_number,
-        'dealers': dealers,
+        "order_number": order_number,
+        "dealers": dealers,
+        "products": products,
+    }
+
+    return render(req, "order/create_order.html", context)
+
+
+
+def edit_order(req, pk):
+
+    order = get_object_or_404(Order, pk=pk)
+    orderitems = order.items.all()
+    products = Product.objects.all()
+
+    if req.method == "POST":
+
+        product_ids = req.POST.getlist("product_id[]")
+        quantities = req.POST.getlist("quantity[]")
+        prices = req.POST.getlist("price[]")
+
+        # validate stock if placing order
+        if "place_order" in req.POST:
+            try:
+                validate_stock(product_ids, quantities)
+            except ValueError as e:
+
+                for error in e.args[0]:
+                    messages.error(req, error)
+
+                return redirect("edit_order", pk=order.pk)
+
+        # delete old items
+        order.items.all().delete()
+
+        # create updated items
+        for i in range(len(product_ids)):
+            OrderItem.objects.create(
+                order=order,
+                product_id=int(product_ids[i]),
+                quantity=int(quantities[i]),
+                unit_price=float(prices[i]),
+            )
+
+        # confirm order if requested
+        if "place_order" in req.POST:
+            confirm_order(order)
+
+        return redirect("order_list")
+
+    context = {
+        "order": order,
+        "orderitems": orderitems,
+        "products": products,
+    }
+
+    return render(req, "order/edit_order.html", context)
+
+
+
+
+
+def view_order(req, pk):
+    order = get_object_or_404(Order , pk = pk)
+    orderitems = OrderItem.objects.filter(order = order)
+    products = Product.objects.all()
+
+
+    if req.method == "POST":
+        product_ids = req.POST.getlist("product_id[]")
+        quantities = req.POST.getlist("quantity[]")
+        prices = req.POST.getlist("price[]")
+
+        # delete old items
+        order.items.all().delete()
+
+        for i in range(len(product_ids)):
+            OrderItem.objects.create(
+                order=order,
+                product_id=int(product_ids[i]),
+                quantity=int(quantities[i]),
+                unit_price=float(prices[i]),
+            )
+
+        if "place_order" in req.POST:
+            try:
+                confirm_order(order)
+            except ValueError as e:
+                messages.error(req, str(e))
+                return redirect("create_order")
+              
+        return redirect("order_list")
+
+
+    context = {
+
+        'order' : order,
+        'orderitems' : orderitems,
         'products' : products,
 
     }
-    return render(req, 'order/create_order.html', context)
-
-
+    return render(req , 'order/view_order.html' , context)
 
 def delete_order(req, pk):
     order = get_object_or_404(Order , pk = pk)

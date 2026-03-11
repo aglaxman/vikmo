@@ -22,11 +22,15 @@
 
 <!-- Search -->
 
-<div class="mb-3">
+<form method="get">
+    
+    <div class="mb-3">
 
-<input type="text" class="form-control" placeholder="Search order by dealer or order number">
+    <input type="text" class="form-control" placeholder="Search order by dealer or order number" name="q" value="{{ req.GET.q }}">
 
-</div>
+    </div>
+
+</form>
 
 
 {% if orders %}
@@ -72,7 +76,20 @@
     </span></td>
 <td>{{ order.updated_at| date:'M,d Y'}}</td>
 <td>
-<button class="btn btn-sm btn-outline-primary">View</button>
+
+{% if order.status == "draft" %}
+
+<a href="{% url 'edit_order' order.pk %}">
+    <button class="btn btn-sm btn-outline-primary">Edit</button>
+</a>
+
+{% else %}
+
+<a href="{% url 'view_order' order.pk %}">
+    <button class="btn btn-sm btn-outline-secondary">View</button>
+</a>
+
+{% endif %}
 
 <a href="{% url 'delete_order' order.pk %}"
     onclick="return confirm('Are you sure you want to delete this product?')">
