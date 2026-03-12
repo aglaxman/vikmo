@@ -23,6 +23,7 @@ urlpatterns = [
 
 
     path("inventory/", views.inventory_list , name='inventory_list' ),
+    path("inventory/edit_inventory/<int:pk>/", views.edit_inventory, name="edit_inventory"),
 
 
 

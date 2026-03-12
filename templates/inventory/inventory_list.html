@@ -2,6 +2,14 @@
 
 {% block content %}
 
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-warning">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
 <div class="container-fluid">
 
 <!-- Page Header -->
@@ -45,8 +53,6 @@
 <tr>
 <th>Product</th>
 <th>SKU</th>
-<th>Stock In</th>
-<th>Stock Out</th>
 <th>Current Stock</th>
 <th>Last Updated</th>
 <th>Actions</th>
@@ -62,12 +68,14 @@
 <td>{{ inventory.product}}</td>
 <td>{{ inventory.product.sku }}</td>    
 <td>{{ inventory.quantity}}</td>
-<td>{{ inventory.quantity }}</td>
-<td>{{ inventory.quantity}}</td>
 <td>{{ inventory.updated_at | date:'M,d Y' }}</td>
 <td>
+
+<a href="{% url 'edit_inventory' inventory.id %}" >
 <button class="btn btn-sm btn-outline-primary">Edit</button>
-<button class="btn btn-sm btn-outline-danger">Delete</button>
+
+</a>
+
 </td>
 </tr>
 {% endfor %}
@@ -89,62 +97,5 @@
 {% endif %}
 
 
-<!-- Add Stock Modal -->
-
-<div class="modal fade" id="inventoryModal">
-
-<div class="modal-dialog">
-
-<div class="modal-content">
-
-<div class="modal-header">
-
-<h5 class="modal-title">Add Inventory</h5>
-
-<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-
-</div>
-
-<div class="modal-body">
-
-<form>
-
-<div class="mb-3">
-<label class="form-label">Product</label>
-<select class="form-control">
-<option>Select Product</option>
-<option>Brake Pad</option>
-<option>Engine Oil</option>
-</select>
-</div>
-
-<div class="mb-3">
-<label class="form-label">Stock In</label>
-<input type="number" class="form-control">
-</div>
-
-<div class="mb-3">
-<label class="form-label">Stock Out</label>
-<input type="number" class="form-control">
-</div>
-
-<div class="mb-3">
-<label class="form-label">Remarks</label>
-<textarea class="form-control"></textarea>
-</div>
-
-<button class="btn btn-success w-100">
-Save Inventory
-</button>
-
-</form>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
 
 {% endblock %}

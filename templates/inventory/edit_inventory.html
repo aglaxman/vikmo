@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+<h3>Edit Inventory</h3>
+
+<form method="POST">
+{% csrf_token %}
+
+<div class="mb-3">
+<label>Product</label>
+<input type="text" class="form-control" value="{{ inventory.product.name }}" readonly>
+</div>
+
+<div class="mb-3">
+<label>Current Stock</label>
+<input type="number" name="quantity" class="form-control" value="{{ inventory.quantity }}" min="0">
+</div>
+
+<button class="btn btn-primary">Update Stock</button>
+
+<a href="{% url 'inventory_list' %}" class="btn btn-secondary">Cancel</a>
+
+</form>
+
+</div>
+
+{% endblock %}

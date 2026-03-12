@@ -1,35 +1,41 @@
 from django.shortcuts import render,redirect, get_object_or_404
 from django.http import HttpResponse 
-from django.db.models import Q
+from django.db.models import Q 
 from django.contrib import messages
+from django.db.models.deletion import ProtectedError
+from django.db import transaction
 
 from .models import *
 
 
 
 
+from django.db import transaction
+
 def confirm_order(order):
 
-    # 1️⃣ Validate stock first
-    for item in order.items.all():
+    if order.status != "draft":
+        raise ValueError("Only draft orders can be confirmed.")
 
-        inventory = item.product.inventory
+    with transaction.atomic():
 
-        if item.quantity > inventory.quantity:
-            raise ValueError(
-                f"Not enough stock for {item.product.name}. Available: {inventory.quantity}"
-            )
+        for item in order.items.select_related("product"):
 
-    # 2️⃣ Reduce stock only after validation passes
-    for item in order.items.all():
+            inventory = item.product.inventory
 
-        inventory = item.product.inventory
-        inventory.quantity -= item.quantity
-        inventory.save()
+            if item.quantity > inventory.quantity:
+                raise ValueError(
+                    f"Not enough stock for {item.product.name}. Available: {inventory.quantity}"
+                )
 
-    # 3️⃣ Update order status
-    order.status = "confirmed"
-    order.save()
+        for item in order.items.all():
+
+            inventory = item.product.inventory
+            inventory.quantity -= item.quantity
+            inventory.save(update_fields=["quantity"])
+
+        order.status = "confirmed"
+        order.save(update_fields=["status"])
 
 def validate_stock(product_ids, quantities):
 
@@ -52,8 +58,20 @@ def validate_stock(product_ids, quantities):
 
 
 
+
 def dashboard(req):
-    return render(req,'dashboard.html')
+
+    total_products = Product.objects.count()
+    total_dealers = Dealer.objects.count()
+    total_orders = Order.objects.count()
+
+    context = {
+        "total_products": total_products,
+        "total_dealers": total_dealers,
+        "total_orders": total_orders,
+    }
+
+    return render(req, "dashboard.html", context)
 
 
 
@@ -134,10 +152,23 @@ def edit_product(req , sku):
     return render(req, 'products/edit_product.html', context)
 
 
+
+
 def delete_product(req, sku):
-    product = get_object_or_404(Product , sku=sku)
-    product.delete()
-    return redirect('product_list')
+
+    product = get_object_or_404(Product, sku=sku)
+
+    try:
+        product.delete()
+        messages.success(req, "Product deleted successfully.")
+
+    except ProtectedError:
+        messages.error(
+            req,
+            "Cannot delete product because it is used in existing orders."
+        )
+
+    return redirect("product_list")
 
 
 # ---------------------------------xxxxxxxxxxxxxxxxxxxxx--------------------------------------------
@@ -219,8 +250,18 @@ def edit_dealer(req , pk ):
 
 
 def delete_dealer(req, pk):
-    dealer = get_object_or_404(Dealer , pk = pk)
-    dealer.delete()
+    dealer = get_object_or_404(Dealer, pk=pk)
+
+    try:
+        dealer.delete()
+        messages.success(req, "Dealer deleted successfully.")
+
+    except ProtectedError:
+        messages.error(
+            req,
+            "Cannot delete dealer because there are existing orders linked to this dealer."
+        )
+
     return redirect('dealer_list')
 
 
@@ -241,6 +282,38 @@ def inventory_list(req):
         'inventories' : inventories,  
     }
     return render(req,'inventory/inventory_list.html', context)
+
+
+from django.contrib import messages
+
+
+
+
+
+def edit_inventory(req, pk):
+
+    inventory = get_object_or_404(Inventory, pk=pk)
+
+    if req.method == "POST":
+
+        quantity = req.POST.get("quantity")
+
+        if int(quantity) < 0:
+            messages.error(req, "Stock cannot be negative.")
+            return redirect("inventory_list")
+
+        inventory.quantity = quantity
+        inventory.save(update_fields=["quantity"])
+
+        messages.success(req, "Inventory updated successfully.")
+
+        return redirect("inventory_list")
+
+    context = {
+        "inventory": inventory
+    }
+
+    return render(req, "inventory/edit_inventory.html", context)
 
 
 
@@ -264,8 +337,6 @@ def order_list(req):
     return render(req, 'order/order_list.html', context)
 
 
-
-
 def create_order(req):
 
     order_number = Order.generate_order_number()
@@ -280,7 +351,18 @@ def create_order(req):
         quantities = req.POST.getlist("quantity[]")
         prices = req.POST.getlist("price[]")
 
-        # call validation
+        # ---- VALIDATIONS ----
+
+        if not dealer_id:
+            messages.error(req, "Please select a dealer.")
+            return redirect("create_order")
+
+        if not product_ids:
+            messages.error(req, "Please add at least one product to the order.")
+            return redirect("create_order")
+
+
+        # stock validation only when placing order
         if "place_order" in req.POST:
             try:
                 validate_stock(product_ids, quantities)
@@ -290,6 +372,8 @@ def create_order(req):
                     messages.error(req, error)
 
                 return redirect("create_order")
+
+        # ---- CREATE ORDER ----
 
         order = Order.objects.create(
             order_number=order_number,
@@ -319,7 +403,6 @@ def create_order(req):
     return render(req, "order/create_order.html", context)
 
 
-
 def edit_order(req, pk):
 
     order = get_object_or_404(Order, pk=pk)
@@ -331,6 +414,15 @@ def edit_order(req, pk):
         product_ids = req.POST.getlist("product_id[]")
         quantities = req.POST.getlist("quantity[]")
         prices = req.POST.getlist("price[]")
+
+        # ---- VALIDATION ----
+        if not product_ids:
+            messages.error(req, "Order must contain at least one item.")
+            return redirect("edit_order", pk=order.pk)
+
+        if any(int(q) <= 0 for q in quantities):
+            messages.error(req, "Quantity must be greater than zero.")
+            return redirect("edit_order", pk=order.pk)
 
         # validate stock if placing order
         if "place_order" in req.POST:
@@ -368,10 +460,6 @@ def edit_order(req, pk):
     }
 
     return render(req, "order/edit_order.html", context)
-
-
-
-
 
 def view_order(req, pk):
     order = get_object_or_404(Order , pk = pk)
@@ -415,6 +503,18 @@ def view_order(req, pk):
     return render(req , 'order/view_order.html' , context)
 
 def delete_order(req, pk):
-    order = get_object_or_404(Order , pk = pk)
+
+    order = get_object_or_404(Order, pk=pk)
+
+    if order.status == "confirmed":
+
+        for item in order.items.all():
+            inventory = item.product.inventory
+            inventory.quantity += item.quantity
+            inventory.save()
+
     order.delete()
-    return redirect('order_list')
+
+    messages.success(req, "Order deleted and stock restored.")
+
+    return redirect("order_list")
